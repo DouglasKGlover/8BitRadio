@@ -1,0 +1,9 @@
+{
+  "name": "8-bit-radio",
+  "version": "0.0.1",
+  "description": "Radio station using socket.io",
+  "dependencies": {
+    "express": "^4.17.1",
+    "socket.io": "^2.3.0"
+  }
+}

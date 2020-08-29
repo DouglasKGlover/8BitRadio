@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>8 Bit Radio</title>
+  </head>
+  <body>
+    <h1>8BitRadio</h1>
+
+    <form action="#" id="name-form">
+      <label for="name-input">Username: </label><br />
+      <input type="text" id="name-input" />
+      <input type="submit" value=">" />
+    </form>
+
+    <br />
+
+    <form action="#" id="text-form">
+      <label for="text-input">Chat: </label><br />
+      <input type="text" id="text-input" />
+      <input type="submit" value=">" />
+    </form>
+
+    <section id="chat-log"></section>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      // Vars
+      const socket = io();
+      const chatForm = document.getElementById("text-form");
+      const textInput = document.getElementById("text-input");
+      const nameForm = document.getElementById("name-form");
+      const nameInput = document.getElementById("name-input");
+      const chatLog = document.getElementById("chat-log");
+
+      // Random name generator
+      // TODO: Get the users last saved name from localstorage
+      let username =
+        "Anon_" + getRandomInt(100, 999) + "_" + getRandomInt(100, 999);
+
+      // User submits chat form
+      chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Only accept non-blank messages
+        // TODO: Add error state if empty
+        if (textInput.value !== "") {
+          // Send the message to the other users
+          socket.emit("chat message", {
+            name: username,
+            message: textInput.value,
+          });
+
+          // Write the message to this users chat log
+          addToChatLog(username + ": " + textInput.value);
+        }
+
+        // Empty the input
+        textInput.value = "";
+      });
+
+      // User wants to change their name
+      nameForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        // Only accept non-blank messages
+        // TODO: Add error state if empty
+        if (nameInput.value !== "") {
+          // Send the message to the other users
+          socket.emit("name change", {
+            oldName: username,
+            newName: nameInput.value,
+          });
+
+          // Write the message to this users chat log
+          addToChatLog(username + " is now " + nameInput.value);
+
+          // Update the name on thi users end
+          username = nameInput.value;
+        }
+
+        // Empty the input
+        textInput.value = "";
+      });
+
+      // Received a message from another user
+      socket.on("chat message", function (msg) {
+        // Write the message to this users chat log
+        addToChatLog(msg.name + ": " + msg.message);
+      });
+
+      // Received a name change notice from another user
+      socket.on("name change", function (msg) {
+        // Write the message to this users chat log
+        addToChatLog(msg.oldName + " is now " + msg.newName);
+      });
+
+      // Function to add text to chat log
+      function addToChatLog(text) {
+        const chatNode = document.createElement("p");
+        const textNode = document.createTextNode(text);
+        chatNode.appendChild(textNode);
+        chatLog.appendChild(chatNode);
+      }
+
+      // Get a random number
+      function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+    </script>
+  </body>
+</html>
